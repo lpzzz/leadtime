@@ -10,9 +10,9 @@ PROCESSING_TIME_TABLE = [
     [None, 1.25, 0.5, 0.95, 0.7],
     [None, 1.1, 0.375, 0.825, 0.525]
 ]
-SHOW = False
+SHOW = False  # for simulation details
 INF = 99999
-ZRE = 0.001
+THR = 0.001
 FOUR = (1, 2, 3, 4)
 
 # rewrite print
@@ -29,6 +29,7 @@ def print(*arg, **kw):
         buildInPrint(*arg, **kw)
 
 
+# main procedure
 def main():
 
     for i in FOUR:
@@ -62,7 +63,7 @@ def main():
                 someting_happend = False
                 # stations to next buffers
                 for i in FOUR:
-                    if time_left[i] < ZRE:
+                    if time_left[i] < THR:  # == 0
                         time_left[i] = INF
                         buffers[i + 1].append(stations[i])
                         stations[i] = 0
@@ -78,7 +79,7 @@ def main():
                 print(f'{round(timer[0], 3):<7}{stations[1:]}\n\n    {buffers[1:]}\n    {time_left[1:]}\n')
 
             time_goes = min(time_left[1:])
-            if abs(time_goes - INF) < ZRE:
+            if abs(time_goes - INF) < THR:  # == 0
                 time_goes = 0
             timer[0] = round(timer[0] + time_goes, 3)
             for i in FOUR:
