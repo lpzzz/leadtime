@@ -10,7 +10,7 @@ PROCESSING_TIME_TABLE = [
     [None, 1.25, 0.5, 0.95, 0.7],
     [None, 1.1, 0.375, 0.825, 0.525]
 ]
-SHOW = False  # for simulation details
+SHOW = True  # for simulation details
 INF = 99999
 THR = 0.001
 FOUR = (1, 2, 3, 4)
@@ -88,6 +88,8 @@ def main():
                     timer[i] = round(timer[i] + time_goes, 3)
 
         print(f'{timer[0]} [{timer[1]}, {timer[2] + timer[4]}, {timer[3]}]')
+        if SHOW:
+            print()
         # input()
 
 
