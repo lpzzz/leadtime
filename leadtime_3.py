@@ -14,7 +14,7 @@ PROCESS_TIME_TABLE = [
 SHOW = True  # for simulation details
 INF = 9999999
 THR = 0.0001
-PRI = 2  # None: FIFO; 2: 2; 4: 4
+PRI = None  # None: FIFO; 2: 2; 4: 4
 N_LOTS = 2
 JOBS = 27
 WIP_LIMIT = 4
@@ -25,10 +25,15 @@ with open(LOGFILE, 'w') as f:
     f.truncate()  # clean
 buildInPrint = print
 
-ganttfile = os.path.join(os.getcwd(), 'gantt_3.csv')  # setting for gantt
-with open(ganttfile, 'w') as f:
+GANTTFILE = os.path.join(os.getcwd(), 'gantt_3.csv')  # setting for gantt
+with open(GANTTFILE, 'w') as f:
     f.truncate
     f.write('N_of_lot, Station, Start_time, Finish_time, During, lot, is_in_step_4\n')
+
+ORDERFILE = os.path.join(os.getcwd(), 'order_3.csv')  # record for orders
+with open(ORDERFILE, 'w') as f:
+    f.truncate
+    f.write('N_of_order, Start_time, Finish_time, During\n')
 
 
 def print(*arg, **kw):  # rewrite print
@@ -71,6 +76,7 @@ def main():  # main procedure
         wip = 0
         previous_wip = WIP_LIMIT
         job_code = 0
+        order = list()
         time_left = [None, [INF, INF], [INF, INF], [INF, INF]]
         timer = [0, [0, 0], [0, 0], [0, 0]]
         if SHOW:
@@ -80,6 +86,7 @@ def main():  # main procedure
             print(wip)
             if iii < THR:  # == 0
                 if previous_wip > 0:
+                    order.append([timer[0]])
                     iii = INITIAL_INPUT_INTERVAL
                     buffers[1] += lots_left[:l]
                     lots_left = lots_left[l:]
@@ -104,7 +111,7 @@ def main():  # main procedure
                             something_happend = True
 
                             during = process_time[p]
-                            with open(ganttfile, 'a') as f:
+                            with open(GANTTFILE, 'a') as f:
                                 line = f'{l}, {i}-{machine}, {round(timer[0] - during, 3)}, {timer[0]}, {during}, {lot % (l * WIP_LIMIT)}, {p == 4}\n'
                                 f.write(line)
 
@@ -112,9 +119,23 @@ def main():  # main procedure
                     job_code += 1
                     something_happend = True
                     wip -= 1
+                    if any(order):
+                        # print(order)
+                        j = len(order) - 1
+                        try:
+                            while len(order[j]) == 1:  # only record start time
+                                j -= 1
+                            j += 1  # last one with only start time
+                        except IndexError:
+                            j = 0
+                        order[j] += [timer[0], round(timer[0] - order[j][0], 3)]  # record finish time and during
+                        with open(ORDERFILE, 'a') as f:
+                            line = f'{j + 1}, {order[j][0]}, {order[j][1]}, {order[j][2]}\n'
+                            f.write(line)
 
-                if initiated:
+                if initiated:  # input
                     while any(lots_left) and wip + previous_wip < WIP_LIMIT:
+                        order.append([timer[0]])  # record start time
                         buffers[1] += lots_left[:l]
                         lots_left = lots_left[l:]
                         wip += 1
