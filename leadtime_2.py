@@ -22,7 +22,7 @@ with open(LOGFILE, 'w') as f:
     f.truncate()  # clean
 buildInPrint = print
 # setting for gantt
-ganttfile = os.path.join(os.getcwd(), 'gantt.csv')
+ganttfile = os.path.join(os.getcwd(), 'gantt_2.csv')
 with open(ganttfile, 'w') as f:
     f.truncate
     f.write('Station, start_time, finish_time, During, lot, number_of_lot\n')
@@ -94,10 +94,13 @@ def main():
                     if stations[i] == 0 and any(buffers[i]):
                         j = 0
                         if PRI is not None and i == 2:  # station 2 and not FIFO
-                            while j < len(buffers[i]) or in_process[buffers[i][j]] != PRI:
-                                j + 1  # look for first primary
-                            if j == len(buffers[i]):
-                                j = 0  # no primary left
+                            try:
+                                while j < len(buffers[i]) or in_process[buffers[i][j]] != PRI:
+                                    j += 1  # look for first primary
+                                    print(j)
+                            except IndexError:
+                                j = 0
+
                         lot = buffers[i].pop(j)
                         stations[i] = lot
                         time_left[i] = process_time[in_process[lot]]
